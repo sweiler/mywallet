@@ -1,13 +1,22 @@
 package main
 
-import "net/http"
-import "fmt"
-
-func defaultHandler(w http.ResponseWriter, req *http.Request) {
-	fmt.Fprintln(w, "Hi @ all, i can use Ümlauts")
-}
+import (
+	"github.com/gorilla/mux"
+	"log"
+	"net/http"
+)
 
 func main() {
-	http.HandleFunc("/", defaultHandler)
-	http.ListenAndServe(":5678", nil)
+	rtr := mux.NewRouter()
+
+	rtr.HandleFunc("/users", getAllUsersRequest).Methods("GET")
+	rtr.HandleFunc("/users", signUpRequest).Methods("POST")
+
+	http.Handle("/", rtr)
+
+	log.Println("Launching server...")
+	err := http.ListenAndServe(":5678", nil)
+	if err != nil {
+		log.Fatalln(err)
+	}
 }
