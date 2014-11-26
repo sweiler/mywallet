@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/sweiler/eventstore"
 	"net/http"
 	"strings"
 	"testing"
@@ -15,6 +16,7 @@ func setUp() {
 		go main()
 	}
 	userStore = nil
+	eventstore.ResetTransient()
 }
 
 func FetchUsers(t *testing.T) []User {
@@ -72,16 +74,24 @@ func TestDuplicateUser(t *testing.T) {
 	setUp()
 
 	signUp := "{\"username\":\"Testuser\", \"password\":\"pwd\"}"
-	http.Post("http://localhost:5678/users", "application/json", strings.NewReader(signUp))
-
-	signUp = "{\"username\":\"Testuser2\", \"password\":\"pwd\"}"
-	http.Post("http://localhost:5678/users", "application/json", strings.NewReader(signUp))
-
-	signUp = "{\"username\":\"Testuser\", \"password\":\"asdf\"}"
 	resp, _ := http.Post("http://localhost:5678/users", "application/json", strings.NewReader(signUp))
 
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("The creation of the second user should have been successful, but error was %d", resp.StatusCode)
+	}
+
+	signUp = "{\"username\":\"Testuser2\", \"password\":\"pwd\"}"
+	resp, _ = http.Post("http://localhost:5678/users", "application/json", strings.NewReader(signUp))
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("The creation of the second user should have been successful, but error was %d", resp.StatusCode)
+	}
+
+	signUp = "{\"username\":\"Testuser\", \"password\":\"asdf\"}"
+	resp, _ = http.Post("http://localhost:5678/users", "application/json", strings.NewReader(signUp))
+
 	if resp.StatusCode != http.StatusConflict {
-		t.Errorf("Status code of second request should have been 409, but was %d", resp.StatusCode)
+		t.Errorf("Status code of third request should have been 409, but was %d", resp.StatusCode)
 	}
 
 	fetchedUsers := FetchUsers(t)
