@@ -6,6 +6,7 @@ import (
 	"github.com/sweiler/eventstore"
 	"log"
 	"net/http"
+	"strings"
 )
 
 type User struct {
@@ -52,6 +53,20 @@ func signUpRequest(w http.ResponseWriter, req *http.Request) {
 	if len(request.Username) == 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintln(w, "Supplied username is empty")
+		return
+	}
+
+	nameUnique := true
+	for _, u := range userStore {
+		if strings.ToLower(u.Name) == strings.ToLower(request.Username) {
+			nameUnique = false
+			break
+		}
+	}
+
+	if !nameUnique {
+		w.WriteHeader(http.StatusConflict)
+		fmt.Fprintln(w, "Your username is already taken!")
 		return
 	}
 

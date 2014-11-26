@@ -67,3 +67,26 @@ func TestSignUp(t *testing.T) {
 		t.Errorf("The fetched password should be '' but was '%s'", fetchedUsers[0].Password)
 	}
 }
+
+func TestDuplicateUser(t *testing.T) {
+	setUp()
+
+	signUp := "{\"username\":\"Testuser\", \"password\":\"pwd\"}"
+	http.Post("http://localhost:5678/users", "application/json", strings.NewReader(signUp))
+
+	signUp = "{\"username\":\"Testuser2\", \"password\":\"pwd\"}"
+	http.Post("http://localhost:5678/users", "application/json", strings.NewReader(signUp))
+
+	signUp = "{\"username\":\"Testuser\", \"password\":\"asdf\"}"
+	resp, _ := http.Post("http://localhost:5678/users", "application/json", strings.NewReader(signUp))
+
+	if resp.StatusCode != http.StatusConflict {
+		t.Errorf("Status code of second request should have been 409, but was %d", resp.StatusCode)
+	}
+
+	fetchedUsers := FetchUsers(t)
+
+	if len(fetchedUsers) != 2 {
+		t.Errorf("There were %d users, but it should be exactly two", len(fetchedUsers))
+	}
+}
