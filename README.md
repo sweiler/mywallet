@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/sweiler/mywallet.svg?branch=master)](https://travis-ci.org/sweiler/mywallet)
 mywallet web application
 =========================
 
