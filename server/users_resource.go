@@ -12,9 +12,10 @@ import (
 )
 
 type User struct {
-	Name     string             `json:"name"`
-	Channel  eventstore.Channel `json:"-"`
-	Password string             `json:"-"`
+	Name       string             `json:"name"`
+	Channel    eventstore.Channel `json:"-"`
+	Password   string             `json:"-"`
+	Categories []Category         `json:"categories"`
 }
 
 func (this *User) createEvent() eventstore.Event {
@@ -85,6 +86,15 @@ func doesUsernameExist(username string) bool {
 	return nameExists
 }
 
+func getUser(username string) *User {
+	for _, u := range userStore {
+		if strings.ToLower(u.Name) == strings.ToLower(username) {
+			return &u
+		}
+	}
+	return nil
+}
+
 func signUpRequest(w http.ResponseWriter, req *http.Request) {
 	log.Println("A sign up is requested")
 	decoder := json.NewDecoder(req.Body)
@@ -121,9 +131,10 @@ func signUpRequest(w http.ResponseWriter, req *http.Request) {
 	}
 
 	newUser := User{
-		Name:     request.Username,
-		Channel:  channel,
-		Password: request.Password,
+		Name:       request.Username,
+		Channel:    channel,
+		Password:   request.Password,
+		Categories: make([]Category, 0),
 	}
 	usersChannel.PushEvent(newUser.createEvent())
 
