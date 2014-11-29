@@ -37,7 +37,7 @@ func newUserFromEvent(event eventstore.Event) (*User, error) {
 	}
 }
 
-var userStore []User
+var userStore []*User
 var usersChannel eventstore.Channel
 
 func init() {
@@ -55,7 +55,7 @@ func onUserEvent(event eventstore.Event) {
 		user, _ := newUserFromEvent(event)
 		log.Println("A user event has arrived")
 		if !doesUsernameExist(user.Name) {
-			userStore = append(userStore, *user)
+			userStore = append(userStore, user)
 		}
 	}
 }
@@ -71,7 +71,7 @@ func getAllUsersRequest(w http.ResponseWriter, req *http.Request) {
 	w.Write(encoded)
 }
 
-func GetAllUsers() []User {
+func GetAllUsers() []*User {
 	return userStore
 }
 
@@ -89,7 +89,7 @@ func doesUsernameExist(username string) bool {
 func getUser(username string) *User {
 	for _, u := range userStore {
 		if strings.ToLower(u.Name) == strings.ToLower(username) {
-			return &u
+			return u
 		}
 	}
 	return nil
