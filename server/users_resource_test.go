@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/sweiler/eventstore"
 	"net/http"
+	"os"
 	"strings"
 	"testing"
 )
@@ -15,8 +16,11 @@ func setUp() {
 		testServerStarted = true
 		go main()
 	}
-	userStore = nil
 	eventstore.ResetTransient()
+}
+
+func cleanUp() {
+	os.RemoveAll("data")
 }
 
 func FetchUsers(t *testing.T) []User {
@@ -45,7 +49,7 @@ func TestEmptyUsers(t *testing.T) {
 	if len(fetchedUsers) != 0 {
 		t.Errorf("There were %d users, but none should exist", len(fetchedUsers))
 	}
-
+	cleanUp()
 }
 
 func TestSignUp(t *testing.T) {
@@ -68,6 +72,7 @@ func TestSignUp(t *testing.T) {
 	if fetchedUsers[0].Password != "" {
 		t.Errorf("The fetched password should be '' but was '%s'", fetchedUsers[0].Password)
 	}
+	cleanUp()
 }
 
 func TestDuplicateUser(t *testing.T) {
@@ -77,7 +82,7 @@ func TestDuplicateUser(t *testing.T) {
 	resp, _ := http.Post("http://localhost:5678/users", "application/json", strings.NewReader(signUp))
 
 	if resp.StatusCode != http.StatusOK {
-		t.Errorf("The creation of the second user should have been successful, but error was %d", resp.StatusCode)
+		t.Errorf("The creation of the first user should have been successful, but error was %d", resp.StatusCode)
 	}
 
 	signUp = "{\"username\":\"Testuser2\", \"password\":\"pwd\"}"
@@ -85,6 +90,7 @@ func TestDuplicateUser(t *testing.T) {
 
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("The creation of the second user should have been successful, but error was %d", resp.StatusCode)
+
 	}
 
 	signUp = "{\"username\":\"Testuser\", \"password\":\"asdf\"}"
@@ -99,4 +105,5 @@ func TestDuplicateUser(t *testing.T) {
 	if len(fetchedUsers) != 2 {
 		t.Errorf("There were %d users, but it should be exactly two", len(fetchedUsers))
 	}
+	cleanUp()
 }

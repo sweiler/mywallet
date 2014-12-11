@@ -1,63 +1,28 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"github.com/sweiler/eventstore"
 	"log"
 	"net/http"
 	"strings"
 )
 
 type User struct {
-	Name       string             `json:"name"`
-	Channel    eventstore.Channel `json:"-"`
-	Password   string             `json:"-"`
-	Categories []Category         `json:"categories"`
+	Name     string `json:"name"`
+	Password string `json:"-"`
+	Head     string `json:"head"`
 }
-
-func (this *User) createEvent() eventstore.Event {
-	buf := new(bytes.Buffer)
-	encoder := json.NewEncoder(buf)
-	encoder.Encode(this)
-	return eventstore.Event{"create user", buf.String()}
-}
-
-func newUserFromEvent(event eventstore.Event) (*User, error) {
-	if event.EventType == "create user" {
-		dataReader := strings.NewReader(event.Data)
-		decoder := json.NewDecoder(dataReader)
-		usr := new(User)
-		err := decoder.Decode(usr)
-		return usr, err
-	} else {
-		return nil, errors.New("The event has the wrong type!")
-	}
-}
-
-var userStore []*User
-var usersChannel eventstore.Channel
 
 func init() {
-	usersChannel = eventstore.GetChannel("_users")
-	usersChannel.AttachListener(onUserEvent)
+	userStore = UsersEntry{Users: make([]*UserRef, 0), Parent: ""}
 }
+
+var userStore UsersEntry
 
 type userSignUp struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
-}
-
-func onUserEvent(event eventstore.Event) {
-	if event.EventType == "create user" {
-		user, _ := newUserFromEvent(event)
-		log.Println("A user event has arrived")
-		if !doesUsernameExist(user.Name) {
-			userStore = append(userStore, user)
-		}
-	}
 }
 
 func getAllUsersRequest(w http.ResponseWriter, req *http.Request) {
@@ -71,14 +36,18 @@ func getAllUsersRequest(w http.ResponseWriter, req *http.Request) {
 	w.Write(encoded)
 }
 
-func GetAllUsers() []*User {
-	return userStore
+func GetAllUsers() []User {
+	ret := make([]User, len(userStore.getUsers()))
+	for i, ur := range userStore.getUsers() {
+		ret[i] = User{Name: ur.Username, Password: ur.Password, Head: ur.RefHash}
+	}
+	return ret
 }
 
 func doesUsernameExist(username string) bool {
 	nameExists := false
-	for _, u := range userStore {
-		if strings.ToLower(u.Name) == strings.ToLower(username) {
+	for _, u := range userStore.getUsers() {
+		if strings.ToLower(u.Username) == strings.ToLower(username) {
 			nameExists = true
 			break
 		}
@@ -86,9 +55,9 @@ func doesUsernameExist(username string) bool {
 	return nameExists
 }
 
-func getUser(username string) *User {
-	for _, u := range userStore {
-		if strings.ToLower(u.Name) == strings.ToLower(username) {
+func getUser(username string) *UserRef {
+	for _, u := range userStore.getUsers() {
+		if strings.ToLower(u.Username) == strings.ToLower(username) {
 			return u
 		}
 	}
@@ -122,21 +91,13 @@ func signUpRequest(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	channel, err := eventstore.NewChannel(request.Username)
-
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintln(w, "Your username is already taken!")
-		return
+	newUser := UserRef{
+		Username: request.Username,
+		Password: request.Password,
+		RefHash:  "",
 	}
 
-	newUser := User{
-		Name:       request.Username,
-		Channel:    channel,
-		Password:   request.Password,
-		Categories: make([]Category, 0),
-	}
-	usersChannel.PushEvent(newUser.createEvent())
+	userStore.addUser(&newUser)
 
-	fmt.Fprintf(w, "Creation of user '%s' succeeded\n", newUser.Name)
+	fmt.Fprintf(w, "Creation of user '%s' succeeded\n", newUser.Username)
 }
