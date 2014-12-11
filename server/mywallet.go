@@ -12,6 +12,8 @@ func main() {
 	rtr.HandleFunc("/users", getAllUsersRequest).Methods("GET")
 	rtr.HandleFunc("/users", signUpRequest).Methods("POST")
 	rtr.HandleFunc("/users/{username}", getSingleUserRequest).Methods("GET")
+	rtr.HandleFunc("/users/{username}/objects/{object}", getUsersObject).Methods("GET")
+	rtr.HandleFunc("/users/{username}/objects", postUserObject).Methods("POST")
 
 	http.Handle("/", rtr)
 

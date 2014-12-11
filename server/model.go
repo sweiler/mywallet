@@ -43,6 +43,8 @@ func (this *UsersEntry) getUsers() []*UserRef {
 }
 
 func (this *UsersEntry) save() {
+	ref, _ := filemanager.GetRef("users")
+	this.Parent = ref
 	jsonString, err := json.Marshal(this)
 	if err != nil {
 		panic(err)

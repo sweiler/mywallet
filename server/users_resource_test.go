@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/sweiler/eventstore"
 	"net/http"
 	"os"
 	"strings"
@@ -16,7 +15,7 @@ func setUp() {
 		testServerStarted = true
 		go main()
 	}
-	eventstore.ResetTransient()
+
 }
 
 func cleanUp() {

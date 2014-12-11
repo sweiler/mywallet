@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
+	"errors"
 )
 
 func UpdateRef(refname, hash string) error {
@@ -67,6 +68,11 @@ func RetrieveObject(prefix, hash string) (string, error) {
 
 	if err != nil {
 		return "", err
+	}
+	
+	h := CreateHash(string(byteContent))
+	if h != hash {
+		return "", errors.New("File content has changed")
 	}
 
 	return string(byteContent), nil
