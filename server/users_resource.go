@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"github.com/gorilla/mux"
 )
 
 type User struct {
@@ -100,4 +101,26 @@ func signUpRequest(w http.ResponseWriter, req *http.Request) {
 	userStore.addUser(&newUser)
 
 	fmt.Fprintf(w, "Creation of user '%s' succeeded\n", newUser.Username)
+}
+
+func getSingleUserRequest(w http.ResponseWriter, req *http.Request) {
+	vars := mux.Vars(req)
+	if usrName, ok := vars["username"]; ok {
+		
+		usr := getUser(usrName)
+		answer := User{Name: usr.Username, Password: "", Head: usr.RefHash}
+		jsonString, err := json.Marshal(answer)
+		
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintln(w, "Marshal-Error")
+			return
+		}
+		
+		fmt.Fprintln(w, string(jsonString))
+		
+	} else {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "You must specify an username\n")
+	}
 }

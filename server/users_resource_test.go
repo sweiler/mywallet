@@ -41,6 +41,27 @@ func FetchUsers(t *testing.T) []User {
 	return fetchedUsers
 }
 
+func FetchSingleUser(username string, t *testing.T) User {
+	resp, err := http.Get("http://localhost:5678/users/" + username)
+
+	if err != nil {
+		t.Fatalf("HTTP error: %v", err)
+	}
+	
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("HTTP status: %v", resp.StatusCode)
+	}
+	
+	decoder := json.NewDecoder(resp.Body)
+
+	var fetchedUser User
+	err = decoder.Decode(&fetchedUser)
+	if err != nil {
+		t.Errorf("Decoding error: %v", err)
+	}
+	return fetchedUser
+}
+
 func TestEmptyUsers(t *testing.T) {
 	setUp()
 
@@ -71,6 +92,19 @@ func TestSignUp(t *testing.T) {
 
 	if fetchedUsers[0].Password != "" {
 		t.Errorf("The fetched password should be '' but was '%s'", fetchedUsers[0].Password)
+	}
+	
+	singleUser := FetchSingleUser("Testuser", t)
+	if singleUser.Name != "Testuser" {
+		t.Errorf("The fetched username should be 'Testuser' but was '%s'", fetchedUsers[0].Name)
+	}
+	
+	if singleUser.Password != "" {
+		t.Errorf("The fetched password should be '' but was '%s'", fetchedUsers[0].Password)
+	}
+	
+	if singleUser.Head != "" {
+		t.Errorf("The fetched HEAD rev should be '' but was '%s'", fetchedUsers[0].Head)
 	}
 	cleanUp()
 }
