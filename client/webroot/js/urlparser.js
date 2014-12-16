@@ -31,6 +31,8 @@ define(function (require, exports) {
 		loadPage(hashvalue, params);
 	};
 	
+	exports.update = loadCurrentPage;
+	
 	exports.init = function () {
 		$(window).bind('hashchange', loadCurrentPage);
 		loadCurrentPage();
