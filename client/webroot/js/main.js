@@ -16,17 +16,20 @@ define(function (require, exports) {
 	
 	var nav = mod_nav.init();
 	
-	
+	var current_view = null;
 	
 	exports.urlChange = function (id, params) {
 		if(logged_in != null) {
+			$("body").removeClass("login");
 			nav.prependTo($("body"));
 			mod_nav.setUser(logged_in);
 		} else {
+			$("body").addClass("login");
 			nav.detach();
 		}
 		mod_nav.setActive(id);
-		$("#main").text("");
+		if(current_view != null)
+			current_view.detach();
 		if(logged_in == null) {
 			p = login;
 		} else {
@@ -35,7 +38,8 @@ define(function (require, exports) {
 				p = homepage;
 			}
 		}
-		$("#main").append(p.view());
+		current_view = p.view();
+		$("#main").append(current_view);
 	};
 	
 	exports.setUser = function (user) {
