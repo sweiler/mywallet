@@ -1,6 +1,7 @@
 define(function (require, exports) {
 	
 	var obj = $("<ul class=\"nav navbar-nav\"></ul>");
+	var nav_entries = {};
 
 	var headerStr = "<div class=\"navbar-header\">" +
 		"<button type=\"button\" class=\"navbar-toggle collapsed\"" + 
@@ -21,14 +22,28 @@ define(function (require, exports) {
 		var navbar = $("<div id='navbar' class='navbar-collapse collapse'></div>").appendTo(container);
 		obj.appendTo(navbar);
 		
-		addNavPoint("Einträge", "#entries");
+		addNavPoint("Einträge", "entries");
+		addNavPoint("Kategorien", "categories");
 		return navObj;
 	};
 	
-	function addNavPoint(name, href) {
+	exports.setActive = function (id) {
+		for (var key in nav_entries) {
+			if(key == id) {
+				nav_entries[key].addClass("active");
+			} else {
+				nav_entries[key].removeClass("active");
+			}
+		}
+		if($("#navbar").hasClass("in"))
+			$("#navbar").collapse('hide');
+	};
+	
+	function addNavPoint(name, id) {
 		var li = $("<li></li>").appendTo(obj);
 		var a = $("<a></a>").appendTo(li);
 		a.text(name);
-		a.attr("href", href);
+		a.attr("href", "#" + id);
+		nav_entries[id] = li;
 	}
 });
