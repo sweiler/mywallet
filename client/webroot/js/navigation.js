@@ -31,6 +31,7 @@ define(function (require, exports) {
 		for (var key in nav_entries) {
 			if(key == id) {
 				nav_entries[key].addClass("active");
+				nav_entries[key].find("a").blur();
 			} else {
 				nav_entries[key].removeClass("active");
 			}
