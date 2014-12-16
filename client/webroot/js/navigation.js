@@ -17,7 +17,7 @@ define(function (require, exports) {
 	exports.init = function () {
 		var navObj = $("<nav class='navbar navbar-inverse navbar-fixed-top' role='navigation'></nav>");
 		var container = $("<div class='container'></div>").appendTo(navObj);
-		var header = $(headerStr).appendTo(container);
+		$(headerStr).appendTo(container);
 		var navbar = $("<div id='navbar' class='navbar-collapse collapse'></div>").appendTo(container);
 		obj.appendTo(navbar);
 		
