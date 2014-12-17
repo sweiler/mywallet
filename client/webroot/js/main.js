@@ -6,17 +6,42 @@ define(function (require, exports) {
 	var homepage = require("homepage");
 	var entries = require("entries");
 	var login = require("login");
+	var entryDialog = require("entryDialog");
 	
 	var pages = {
 			"login" : login,
-			"entries" : entries
+			"entries" : entries,
+			"entry" : entryDialog
 	};
+	
+	var current_params = {};
+	var current_page = "";
 	
 	var logged_in = null;
 	
 	var nav = mod_nav.init();
 	
 	var current_view = null;
+	
+	exports.currentId = function () {
+		return current_page;
+	};
+	
+	exports.currentParams = function () {
+		return current_params;
+	};
+	
+	exports.toUrl = function (id, params) {
+		var hash = "#" + id;
+		if(Object.keys(params).length > 0) {
+			hash += "?";
+			for(var key in params) {
+				var value = params[key];
+				hash += key + "&" + value;
+			}
+		}
+		window.location.hash = hash;
+	};
 	
 	exports.urlChange = function (id, params) {
 		if(logged_in != null) {
@@ -38,6 +63,8 @@ define(function (require, exports) {
 				p = homepage;
 			}
 		}
+		current_page = id;
+		current_params = params;
 		current_view = p.view();
 		$("#main").append(current_view);
 	};
