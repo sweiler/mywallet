@@ -7,11 +7,14 @@ define(function (require, exports) {
 	var entries = require("entries");
 	var login = require("login");
 	var entryDialog = require("entryDialog");
+	var categories = require("categories");
+	
 	
 	var pages = {
 			"login" : login,
 			"entries" : entries,
-			"entry" : entryDialog
+			"entry" : entryDialog,
+			"categories" : categories
 	};
 	
 	var current_params = {};
