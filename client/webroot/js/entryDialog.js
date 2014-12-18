@@ -1,6 +1,6 @@
 define(function (require, exports) {
-	
-	var entries = require("entries");
+
+	var storage = require("storage");
 	var app = require("main");
 	
 	var return_to_id = "";
@@ -51,7 +51,7 @@ define(function (require, exports) {
 				$(".desc_grp").removeClass("has-error");
 			}
 			if (!isNaN(amount) && amount != 0 && desc.length > 0) {
-				entries.addEntry(desc, date, amount);
+				storage.addEntry(desc, date, amount);
 				
 				closer();
 			}

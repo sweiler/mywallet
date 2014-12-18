@@ -1,6 +1,7 @@
 define(function (require, exports) {
 	var mod_nav = require("navigation");
 	var parser = require("urlparser");
+	var storage = require("storage");
 	
 	// Pages
 	var homepage = require("homepage");
@@ -94,4 +95,5 @@ define(function (require, exports) {
 	}
 	
 	parser.init();
+	storage.init();
 });

@@ -1,6 +1,7 @@
 define(function (require, exports) {
 	
 	var entryDialog = require("entryDialog");
+	var storage = require("storage");
 	
 	entrytable = $("<table class='table' />");
 	
@@ -45,6 +46,5 @@ define(function (require, exports) {
 		$("<td>" + amount + "</td>").appendTo(row);
 	};
 	
-	exports.addEntry("Testeintrag", "16.12.2014 16:00 Uhr", "3,00€");
 	
 });

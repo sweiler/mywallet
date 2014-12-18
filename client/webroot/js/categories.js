@@ -1,5 +1,7 @@
 define(function (require, exports) {
 	
+	var storage = require("storage");
+	
 	var widget = $("<div/>");
 	
 	$("<div class='page-header'>" +
@@ -20,7 +22,7 @@ define(function (require, exports) {
 	form.submit(function () {
 		var name = name_input.val();
 		if(name.length > 0) {
-			exports.addCategory(name);
+			storage.addCategory(name);
 		}
 		return false;
 	});
@@ -41,5 +43,6 @@ define(function (require, exports) {
 		var row = $("<tr/>").appendTo(categoryTable);
 		$("<td>" + name + "</td>").appendTo(row);
 	};
+	
 	
 });
