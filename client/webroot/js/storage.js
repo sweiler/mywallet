@@ -59,49 +59,163 @@ define(function (require, exports) {
 		saveRef("head", hash);
 	};
 	
-	var pull = function () {
+	var fetch  = function (callback) {
 		$.ajax({
 			type: "GET",
 			url: remote_url + "users/" + app.getUser().username,
 			dataType: "json",
 			success: function (d) {
+				var oldRef = getRef("origin");
 				saveRef("origin", d.head);
 				var head = getRef("head");
-				if(d.head == head) {
-					console.log("Already up-to-date.");
+				if(d.head == head || d.head == "") {
+					callback();
 				} else {
-					var originHeadObj = loadObject(d.head);
-					if(originHeadObj != null || d.head == "") {
-						console.log("Updated origin ref.");
-					} else {
-						console.log("Merge origin into head");
-						fetchObject(head, function (obj) {
-							if(obj == null && head != "") {
-								
+					function fetchNext(fetchHash) {
+						fetchObject(fetchHash, function (obj) {
+							saveObject(obj);
+							if(obj.ref != oldRef) {
+								fetchNext(obj.ref);
 							} else {
-								
-								console.log("Fast-forward");
-								
-								function fetchNext(fetchHash) {
-									fetchObject(fetchHash, function (obj) {
-										saveObject(obj);
-										if(obj.ref != head) {
-											fetchNext(obj.ref);
-										} else {
-											saveRef("head", d.head);
-											update();
-										}
-									});
-								}
-								
-								fetchNext(d.head);
-								
+								callback();
 							}
 						});
 					}
+					if(d.head != oldRef)
+						fetchNext(d.head);
+					else
+						callback();
 				}
+			}});
+	}
+	
+	var entryEquals = function (entry1, entry2) {
+		return entry1.desc == entry2.desc && 
+		entry1.date == entry2.date &&
+		entry1.amount == entry2.amount;
+	};
+	
+	var find = function (arr, entry) {
+		for (var i = 0; i < arr.length; i++) {
+			var o = arr[i];
+			if(entryEquals(o, entry)) {
+				return i;
 			}
+		}
+		return -1;
+	};
+	
+	
+	
+	var diff = function (entriesA, entriesB) {
+		var insertions = [];
+		// find insertions
+		for(var i = 0; i < entriesB.length; i++) {
+			if(find(entriesA, entriesB[i]) == -1) {
+				insertions.push(entriesB[i]);
+			}
+		}
+		var deletions = [];
+		// find deletions
+		for(var i = 0; i < entriesA.length; i++) {
+			if(find(entriesB, entriesA[i]) == -1) {
+				deletions.push(entriesA[i]);
+			}
+		}
+		
+		console.log(insertions);
+		console.log(deletions);
+		
+		return {insert: insertions, del: deletions};
+	};
+	
+	var pull = function (callback) {
+		
+		fetch(function () {
+			var head = getRef("head");
+			var orig_head = getRef("origin");
+			console.log("HEAD: " + head);
+			console.log("ORIG_HEAD: " + orig_head);
+			if(orig_head != head && orig_head != "") {
+				
+				// Rebuild origin history
+				var orig_pointer = orig_head;
+				var orig_history = [];
+				while(orig_pointer != "") {
+					orig_history.push(orig_pointer);
+					var obj = loadObject(orig_pointer);
+					orig_pointer = obj.ref;
+				}
+				
+				// Find nearest common ancestor
+				var head_pointer = head;
+				var nca = "";
+				while(head_pointer != "") {
+					if(orig_history.indexOf(head_pointer) != -1) {
+						nca = head_pointer;
+						break;
+					} else {
+						var obj = loadObject(head_pointer);
+						head_pointer = obj.ref;
+					}
+				}
+				
+				console.log("NCA: " + nca);
+				
+				if(nca == head) {
+					console.log("Fast-forward");
+					saveRef("head", orig_head);
+					update();
+				} else if(nca == orig_head) {
+					console.log("Only unpublished changes");
+				} else {
+					console.log("Real-merge has to occur");
+					
+					var head_data = loadObject(head).data.entries;
+					var orig_data = loadObject(orig_head).data.entries;
+					var base = loadObject(nca).data.entries;
+					
+					var diff1 = diff(base, head_data);
+					var diff2 = diff(base, orig_data);
+					
+					var insdiff = diff(diff1.insert, diff2.insert);
+					var deldiff = diff(diff1.del, diff2.del);
+					
+					var newRemote = insdiff.insert;
+					var newLocal = insdiff.del;
+					
+					var delRemote = deldiff.insert;
+					var delLocal = deldiff.del;
+					
+					var merged = orig_data.slice();
+					$.each(delLocal, function (i, d) {
+						for(var j = 0; j < merged.length; j++) {
+							if(entryEquals(d, merged[j])) {
+								merged.slice(j, 1);
+								j--;
+							}
+						}
+					});
+					$.each(newLocal, function (i, n) {
+						console.log("merge added new entry: " + n.desc);
+						merged.push(n);
+					});
+					
+					var commitObj = {data: {entries: merged, categories: categories},
+							ref: orig_head};
+					
+					var hash = saveObject(commitObj);
+					saveRef("head", hash);
+					update();
+				}
+				
+				
+			} else {
+				console.log("Already up-to-date.");
+			}
+			callback();
 		});
+					
 	};
 	
 	var fetchObject = function (hash, callback) {
@@ -123,8 +237,6 @@ define(function (require, exports) {
 		var head = getRef("head");
 		if(head == "")
 			return;
-		console.log("HEAD: " + head);
-		console.log("ORIGIN: " + origin);
 		var pushing = [];
 		while(head != origin) {
 			var state = loadObject(head);
@@ -139,8 +251,6 @@ define(function (require, exports) {
 		
 		var idx = pushing.length - 1;
 		function pushI(i) {	
-			console.log("Pushing:");
-			console.log(pushing[i]);
 			$.ajax({
 				type: "POST",
 				url: remote_url + "users/" + app.getUser().username + "/objects",
@@ -167,8 +277,7 @@ define(function (require, exports) {
 	};
 	
 	exports.sync = function () {
-		pull();
-		push();
+		pull(push);
 	};
 	
 	exports.addCategory = function (name) {
@@ -216,14 +325,12 @@ define(function (require, exports) {
 			console.log("refresh view");
 			entries = state.data.entries.slice();
 			categories = state.data.categories.slice();
-			console.log(categories);
 			entries_module.clear();
 			categories_module.clear();
 			$.each(entries, function (i, e) {
 				entries_module.addEntry(e.desc, e.date, e.amount);
 			});
 			$.each(categories, function (i, c) {
-				console.log("Add cat: " + c);
 				categories_module.addCategory(c);
 			});
 		}
