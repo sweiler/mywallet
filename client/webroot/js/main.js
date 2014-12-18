@@ -86,6 +86,10 @@ define(function (require, exports) {
 		parser.update();
 	};
 	
+	exports.getUser = function () {
+		return logged_in;
+	}
+	
 	if(window.localStorage !== undefined) {
 		var str = window.localStorage["user"];
 		if(str == null)

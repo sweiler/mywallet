@@ -19,12 +19,13 @@ define(function (require, exports) {
 	$("<button type='submit' class='btn btn-default col-md-1" +
 			" col-xs-3'>Anlegen</button>").appendTo(grp);
 	
-	form.submit(function () {
+	form.submit(function (e) {
+		e.preventDefault();
 		var name = name_input.val();
+		name_input.val("");
 		if(name.length > 0) {
 			storage.addCategory(name);
 		}
-		return false;
 	});
 	
 	var categoryTable = $("<table class='table'></table>").appendTo(widget);
@@ -44,5 +45,10 @@ define(function (require, exports) {
 		$("<td>" + name + "</td>").appendTo(row);
 	};
 	
+	exports.clear = function () {
+		heading.detach();
+		categoryTable.empty();
+		heading.prependTo(categoryTable);
+	};
 	
 });

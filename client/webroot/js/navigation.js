@@ -1,5 +1,6 @@
 define(function (require, exports) {
 	var app = require("main");
+	var storage = require("storage");
 	var obj = $("<ul class=\"nav navbar-nav\"></ul>");
 	var nav_entries = {};
 	var logout_link = null;
@@ -12,7 +13,7 @@ define(function (require, exports) {
 	
 	var header2 = "<div class='navbar-header pull-right'>" + 
 	"<ul class='nav navbar-nav pull-left refresh'>" +
-	"<li><a href='#' class='glyphicon glyphicon-refresh'></a></li>" +
+	"<li><a href='#' id='sync' class='glyphicon glyphicon-refresh'></a></li>" +
 	"</ul>" +
 	"<button type=\"button\" class=\"navbar-toggle collapsed\"" + 
 	"data-toggle=\"collapse\" data-target=\"#navbar\" aria-expanded=\"false\"" +
@@ -28,7 +29,11 @@ define(function (require, exports) {
 		var navObj = $("<nav class='navbar navbar-inverse navbar-fixed-top' role='navigation'></nav>");
 		var container = $("<div class='container'></div>").appendTo(navObj);
 		$(headerStr).appendTo(container);
-		$(header2).appendTo(container);
+		var h2 = $(header2).appendTo(container);
+		h2.find("#sync").click(function () {
+			storage.sync();
+			return false;
+		});
 		var navbar = $("<div id='navbar' class='navbar-collapse collapse'></div>").appendTo(container);
 		obj.appendTo(navbar);
 		var txt = $("<p class='navbar-text navbar-right'></p>").appendTo(navbar);

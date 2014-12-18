@@ -46,5 +46,11 @@ define(function (require, exports) {
 		$("<td>" + amount + "</td>").appendTo(row);
 	};
 	
+	exports.clear = function () {
+		thead.detach();
+		entrytable.empty();
+		thead.appendTo(entrytable);
+	};
+	
 	
 });
