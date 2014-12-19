@@ -7,14 +7,14 @@ define(function (require, exports) {
 	var return_to_params = {};
 	
 	var build = function (parent, closer) {
-		var form = $("<form role='form'></form>").appendTo(parent);
-		var desc_grp = $("<div class='desc_grp'/>").appendTo(form);
+		var form = $("<form role='form' class='dialog-form'></form>").appendTo(parent);
+		var desc_grp = $("<div class='desc_grp dialog-spacer'/>").appendTo(form);
 		$("<label class='sr-only' for='add_desc'>Beschreibung</label>").appendTo(desc_grp);
 		$("<input class='form-control clearInput' id='add_desc' name='add_desc' type='text'" + 
 				"placeholder='Beschreibung' />").appendTo(desc_grp);
 		
 		$("<label class='sr-only' for='add_date'>Datum</label>").appendTo(form);
-		var date_input = $("<input class='form-control' id='add_date' type='text'" + 
+		var date_input = $("<input class='form-control dialog-spacer' id='add_date' type='text'" + 
 				"name='add_date' />").appendTo(form);
 		date_input.datepicker({
 			todayBtn: "linked",
@@ -26,16 +26,25 @@ define(function (require, exports) {
 		date_input.datepicker("setDate", new Date());
 		
 		$("<label class='sr-only' for='add_desc'>Betrag</label>").appendTo(form);
-		var inputgrp = $("<div class='input-group amount_grp'></div>").appendTo(form);
+		var inputgrp = $("<div class='input-group amount_grp dialog-spacer'></div>").appendTo(form);
 		$("<input class='form-control clearInput' name='add_amount' id='add_amount' type='text'" + 
 				"placeholder='Betrag' />").appendTo(inputgrp);
 		$("<span class='input-group-addon'>€</span>").appendTo(inputgrp);
+		
+		$("<label class='sr-only' for='add_cat'>Kategorie</label>").appendTo(form);
+		var cat_input = $("<input class='form-control dialog-spacer' id='add_cat'" +
+				" type='text' name='add_cat' placeholder='Kategorie'/>").appendTo(form);
+		
+		cat_input.autocomplete({
+			source: storage.getCategories()
+		});
 		
 		form.submit(function () {
 			
 			var desc = $("#add_desc").val();
 			var date = $("#add_date").datepicker('getDate').toLocaleDateString();
 			var amount = $("#add_amount").val();
+			var cat = $("#add_cat").val();
 			
 			amount = amount.replace(",", ".");
 			amount = parseFloat(amount);
@@ -50,8 +59,11 @@ define(function (require, exports) {
 			} else {
 				$(".desc_grp").removeClass("has-error");
 			}
+			if(cat == "") {
+				cat = "Keine Kategorie";
+			}
 			if (!isNaN(amount) && amount != 0 && desc.length > 0) {
-				storage.addEntry(desc, date, amount);
+				storage.addEntry(desc, date, amount, cat);
 				
 				closer();
 			}

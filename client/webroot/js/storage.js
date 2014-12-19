@@ -4,8 +4,8 @@ define(function (require, exports) {
 	var categories_module = require("categories");
 	var app = require("main");
 	
-	var categories = [];
 	var entries = [];
+	var categories = [];
 	var objects = new Object();
 	var refs = new Object();
 	
@@ -54,8 +54,7 @@ define(function (require, exports) {
 	var commit = function () {
 		var ref = getRef("head");
 		var clonedEntries = JSON.parse(JSON.stringify(entries));
-		var clonedCategories = JSON.parse(JSON.stringify(categories));
-		var hash = saveObject({data: {entries: clonedEntries, categories: clonedCategories}, ref: ref});
+		var hash = saveObject({data: {entries: clonedEntries}, ref: ref});
 		saveRef("head", hash);
 	};
 	
@@ -64,6 +63,9 @@ define(function (require, exports) {
 			type: "GET",
 			url: remote_url + "users/" + app.getUser().username,
 			dataType: "json",
+			error : function (xhr, status, text) {
+				alert("Verbindungsfehler: " + text);
+			},
 			success: function (d) {
 				var oldRef = getRef("origin");
 				saveRef("origin", d.head);
@@ -201,7 +203,7 @@ define(function (require, exports) {
 						merged.push(n);
 					});
 					
-					var commitObj = {data: {entries: merged, categories: categories},
+					var commitObj = {data: {entries: merged},
 							ref: orig_head};
 					
 					var hash = saveObject(commitObj);
@@ -280,23 +282,15 @@ define(function (require, exports) {
 		pull(push);
 	};
 	
-	exports.addCategory = function (name) {
-		var found = false;
-		$.each(categories, function (i, n) {
-			if(n == name)
-				found = true;
-		});
-		if(found)
-			return;
-		categories.push(name);
-		commit();
-		categories_module.addCategory(name);
-	};
 	
-	exports.addEntry = function (desc, date, amount) {
-		entries.push({desc: desc, date: date, amount: amount});
+	exports.addEntry = function (desc, date, amount, category) {
+		entries.push({desc: desc, date: date, amount: amount, category: category});
+		if(categories.indexOf(category) == -1) {
+			categories.push(category);
+			categories_module.addCategory(category);
+		}
 		commit();
-		entries_module.addEntry(desc, date, amount);
+		entries_module.addEntry(desc, date, amount, category);
 	};
 	
 	exports.init = function () {
@@ -307,9 +301,11 @@ define(function (require, exports) {
 			if(ref != "") {
 				var state = loadObject(ref);
 				entries = state.data.entries;
-				categories = state.data.categories;
+				categories = [];
 				$.each(entries, function (i, e) {
-					entries_module.addEntry(e.desc, e.date, e.amount);
+					entries_module.addEntry(e.desc, e.date, e.amount, e.category);
+					if(categories.indexOf(e.category) == -1)
+						categories.push(e.category);
 				});
 				$.each(categories, function (i, c) {
 					categories_module.addCategory(c);
@@ -324,16 +320,22 @@ define(function (require, exports) {
 			var state = loadObject(ref);
 			console.log("refresh view");
 			entries = state.data.entries.slice();
-			categories = state.data.categories.slice();
+			categories = [];
 			entries_module.clear();
 			categories_module.clear();
 			$.each(entries, function (i, e) {
-				entries_module.addEntry(e.desc, e.date, e.amount);
+				entries_module.addEntry(e.desc, e.date, e.amount, e.category);
+				if(categories.indexOf(e.category) == -1)
+					categories.push(e.category);
 			});
 			$.each(categories, function (i, c) {
 				categories_module.addCategory(c);
 			});
 		}
-	}
+	};
+	
+	exports.getCategories = function () {
+		return categories;
+	};
 	
 });
