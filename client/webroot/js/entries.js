@@ -32,6 +32,8 @@ define(function (require, exports) {
 	$("<th>Beschreibung:</th>").appendTo(headlines);
 	$("<th>Datum:</th>").appendTo(headlines);
 	$("<th>Betrag:</th>").appendTo(headlines);
+	$("<th>Kategorie:</th>").appendTo(headlines);
+	$("<th>&nbsp;</th>").appendTo(headlines);
 	
 	
 	
@@ -39,11 +41,23 @@ define(function (require, exports) {
 		return widget;
 	};
 	
-	exports.addEntry = function (desc, date, amount) {
+	exports.addEntry = function (desc, date, amount, cat) {
 		var row = $("<tr />").appendTo(entrytable);
 		$("<td>" + desc + "</td>").appendTo(row);
 		$("<td>" + date + "</td>").appendTo(row);
 		$("<td>" + amount + "</td>").appendTo(row);
+		$("<td>" + cat + "</td>").appendTo(row);
+		var buttons_td = $("<td></td>").appendTo(row);
+		var remove_link = $("<a href='#'>Löschen</a>").appendTo(buttons_td);
+		remove_link.click(function (e) {
+			e.preventDefault();
+			var idx = row.index();
+			storage.removeEntry(idx);
+		});
+	};
+	
+	exports.removeEntry = function (idx) {
+		entrytable.find("tbody").children().get(idx).remove();
 	};
 	
 	exports.clear = function () {

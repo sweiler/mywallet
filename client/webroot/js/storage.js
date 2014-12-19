@@ -52,6 +52,7 @@ define(function (require, exports) {
 	};
 	
 	var commit = function () {
+		console.log("Commit: " + entries.length + " entries");
 		var ref = getRef("head");
 		var clonedEntries = JSON.parse(JSON.stringify(entries));
 		var hash = saveObject({data: {entries: clonedEntries}, ref: ref});
@@ -193,8 +194,8 @@ define(function (require, exports) {
 					$.each(delLocal, function (i, d) {
 						for(var j = 0; j < merged.length; j++) {
 							if(entryEquals(d, merged[j])) {
-								merged.slice(j, 1);
-								j--;
+								merged.splice(j, 1);
+								break;
 							}
 						}
 					});
@@ -291,6 +292,27 @@ define(function (require, exports) {
 		}
 		commit();
 		entries_module.addEntry(desc, date, amount, category);
+	};
+	
+	exports.removeEntry = function (idx) {
+		var removedEntry = entries[idx];
+		entries.splice(idx, 1);
+		var categoryExisting = false;
+		$.each(entries, function (i, e) {
+			if(e.category == removedEntry.category) {
+				categoryExisting = true;
+				return false;
+			}
+		});
+		if(!categoryExisting) {
+			var catIdx = categories.indexOf(removedEntry.category);
+			console.log(catIdx);
+			categories.splice(catIdx, 1);
+			categories_module.removeCategory(catIdx);
+		}
+		commit();
+		entries_module.removeEntry(idx);
+		
 	};
 	
 	exports.init = function () {

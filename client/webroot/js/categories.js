@@ -10,6 +10,7 @@ define(function (require, exports) {
 	
 	
 	var categoryTable = $("<table class='table'></table>").appendTo(widget);
+	var rows = [];
 	
 	var heading = $("<thead />").appendTo(categoryTable);
 	var head_row = $("<tr/>").appendTo(heading);
@@ -23,6 +24,7 @@ define(function (require, exports) {
 	
 	exports.addCategory = function (name) {
 		var row = $("<tr/>").appendTo(categoryTable);
+		rows.push(row);
 		$("<td>" + name + "</td>").appendTo(row);
 	};
 	
@@ -32,6 +34,9 @@ define(function (require, exports) {
 		heading.prependTo(categoryTable);
 	};
 	
-	
+	exports.removeCategory = function (idx) {
+		rows[idx].remove();
+		rows = rows.slice(idx, 1);
+	};
 	
 });
