@@ -10,7 +10,7 @@ define(function (require, exports) {
 	$("<label for='inputPassword' class='sr-only'>Passwort</label>").appendTo(form);
 	var pwdInput = $("<input type='password' id='inputPassword' " +
 			"class='form-control' placeholder='Passwort' required />").appendTo(form);
-	var btn = $("<button class='btn btn-lg btn-primary btn-block' " +
+	$("<button class='btn btn-lg btn-primary btn-block' " +
 			"type='submit'>Anmelden</button>").appendTo(form);
 	
 	
@@ -18,11 +18,11 @@ define(function (require, exports) {
 	
 	exports.view  = function () {
 		return form;
-	}
+	};
 	
 	form.submit(function () {
 		var username = userInput.val();
-		var password = userInput.val();
+		var password = pwdInput.val();
 		
 		app.setUser({username: username, password: password});
 		return false;

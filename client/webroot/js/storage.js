@@ -65,7 +65,11 @@ define(function (require, exports) {
 			url: remote_url + "users/" + app.getUser().username,
 			dataType: "json",
 			error : function (xhr, status, text) {
+				console.log(app.getUser());
 				alert("Verbindungsfehler: " + text);
+			},
+			headers : {
+				"X-Mywallet-Auth" : JSON.stringify(app.getUser())
 			},
 			success: function (d) {
 				var oldRef = getRef("origin");
@@ -227,6 +231,9 @@ define(function (require, exports) {
 			type: "GET",
 			url: remote_url + "users/" + app.getUser().username + "/objects/" + hash,
 			dataType: "json",
+			headers : {
+				"X-Mywallet-Auth" : JSON.stringify(app.getUser())
+			},
 			success: callback,
 			error: function (xhr, status, text) {
 				console.log("fetch error: " + text);
@@ -260,6 +267,9 @@ define(function (require, exports) {
 				data: JSON.stringify(pushing[i]),
 				contentType: "application/json",
 				dataType: "json",
+				headers : {
+					"X-Mywallet-Auth" : JSON.stringify(app.getUser())
+				},
 				success: function (d) {
 					saveRef("origin", d.hash);
 					if(i > 0) {
