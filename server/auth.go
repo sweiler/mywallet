@@ -6,6 +6,8 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"bytes"
+	"fmt"
 )
 
 type userPasswordPair struct {
@@ -35,7 +37,11 @@ func auth(req *http.Request) (string, bool) {
 		hashing := usr.Salt + upp.Password
 		h := sha1.New()
 		io.WriteString(h, hashing)
-		if string(h.Sum(nil)) == usr.Password {
+		byteSlice := make([]byte, 0, 40)
+		buf := bytes.NewBuffer(byteSlice)
+		fmt.Fprintf(buf, "%x", h.Sum(nil))
+		
+		if buf.String() == usr.Password {
 			return usr.Username, true
 		} else {
 			log.Printf("Login failed, password hash is wrong")

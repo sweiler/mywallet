@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"crypto/sha1"
 	"encoding/json"
 	"fmt"
@@ -116,10 +117,13 @@ func signUpRequest(w http.ResponseWriter, req *http.Request) {
 	hashing := salt + request.Password
 	h := sha1.New()
 	io.WriteString(h, hashing)
+	byteSlice := make([]byte, 0, 40)
+	buf := bytes.NewBuffer(byteSlice)
+	fmt.Fprintf(buf, "%x", h.Sum(nil))
 
 	newUser := UserRef{
 		Username: request.Username,
-		Password: string(h.Sum(nil)),
+		Password: buf.String(),
 		Salt:     salt,
 		RefHash:  "",
 	}
