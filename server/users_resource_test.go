@@ -3,30 +3,26 @@ package main
 import (
 	"encoding/json"
 	"net/http"
-	"os"
 	"strings"
 	"testing"
 )
 
-var testServerStarted bool = false
-
-func setUp() {
-	if !testServerStarted {
-		testServerStarted = true
-		go main()
-	}
-
-}
-
-func cleanUp() {
-	os.RemoveAll("data")
-}
-
 func FetchUsers(t *testing.T) []User {
-	resp, err := http.Get("http://localhost:5678/users")
+	header := "{\"username\":\"admin\", \"password\":\"monsta\"}"
+
+	req, err := http.NewRequest("GET", "http://localhost:5678/users", nil)
+	if err != nil {
+		t.Fatalf("Request building failed: %v", err)
+	}
+	req.Header.Add("X-Mywallet-Auth", header)
+	resp, err := client.Do(req)
 
 	if err != nil {
 		t.Fatalf("HTTP error: %v", err)
+	}
+
+	if resp.StatusCode != 200 {
+		t.Fatalf("HTTP-Status: %v", resp.StatusCode)
 	}
 
 	decoder := json.NewDecoder(resp.Body)
@@ -40,17 +36,20 @@ func FetchUsers(t *testing.T) []User {
 	return fetchedUsers
 }
 
-func FetchSingleUser(username string, t *testing.T) User {
-	resp, err := http.Get("http://localhost:5678/users/" + username)
+func FetchSingleUser(username string, password string, t *testing.T) User {
+
+	req := buildGet("http://localhost:5678/users/"+username, username, password)
+
+	resp, err := client.Do(req)
 
 	if err != nil {
 		t.Fatalf("HTTP error: %v", err)
 	}
-	
+
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("HTTP status: %v", resp.StatusCode)
 	}
-	
+
 	decoder := json.NewDecoder(resp.Body)
 
 	var fetchedUser User
@@ -61,23 +60,10 @@ func FetchSingleUser(username string, t *testing.T) User {
 	return fetchedUser
 }
 
-func TestEmptyUsers(t *testing.T) {
-	setUp()
-
-	fetchedUsers := FetchUsers(t)
-
-	if len(fetchedUsers) != 0 {
-		t.Errorf("There were %d users, but none should exist", len(fetchedUsers))
-	}
-	cleanUp()
-}
-
 func TestSignUp(t *testing.T) {
 	setUp()
 
-	signUp := "{\"username\":\"Testuser\", \"password\":\"pwd\"}"
-
-	http.Post("http://localhost:5678/users", "application/json", strings.NewReader(signUp))
+	registerUser("admin", "monsta")
 
 	fetchedUsers := FetchUsers(t)
 
@@ -85,23 +71,15 @@ func TestSignUp(t *testing.T) {
 		t.Errorf("There were %d users, but it should be exactly one", len(fetchedUsers))
 	}
 
-	if fetchedUsers[0].Name != "Testuser" {
-		t.Errorf("The fetched username should be 'Testuser' but was '%s'", fetchedUsers[0].Name)
+	if fetchedUsers[0].Name != "admin" {
+		t.Errorf("The fetched username should be 'admin' but was '%s'", fetchedUsers[0].Name)
 	}
 
-	if fetchedUsers[0].Password != "" {
-		t.Errorf("The fetched password should be '' but was '%s'", fetchedUsers[0].Password)
+	singleUser := FetchSingleUser("admin", "monsta", t)
+	if singleUser.Name != "admin" {
+		t.Errorf("The fetched username should be 'admin' but was '%s'", fetchedUsers[0].Name)
 	}
-	
-	singleUser := FetchSingleUser("Testuser", t)
-	if singleUser.Name != "Testuser" {
-		t.Errorf("The fetched username should be 'Testuser' but was '%s'", fetchedUsers[0].Name)
-	}
-	
-	if singleUser.Password != "" {
-		t.Errorf("The fetched password should be '' but was '%s'", fetchedUsers[0].Password)
-	}
-	
+
 	if singleUser.Head != "" {
 		t.Errorf("The fetched HEAD rev should be '' but was '%s'", fetchedUsers[0].Head)
 	}
@@ -111,7 +89,7 @@ func TestSignUp(t *testing.T) {
 func TestDuplicateUser(t *testing.T) {
 	setUp()
 
-	signUp := "{\"username\":\"Testuser\", \"password\":\"pwd\"}"
+	signUp := "{\"username\":\"admin\", \"password\":\"monsta\"}"
 	resp, _ := http.Post("http://localhost:5678/users", "application/json", strings.NewReader(signUp))
 
 	if resp.StatusCode != http.StatusOK {
@@ -126,7 +104,7 @@ func TestDuplicateUser(t *testing.T) {
 
 	}
 
-	signUp = "{\"username\":\"Testuser\", \"password\":\"asdf\"}"
+	signUp = "{\"username\":\"Testuser2\", \"password\":\"asdf\"}"
 	resp, _ = http.Post("http://localhost:5678/users", "application/json", strings.NewReader(signUp))
 
 	if resp.StatusCode != http.StatusConflict {

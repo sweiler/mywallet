@@ -8,6 +8,7 @@ import (
 type UserRef struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
+	Salt     string `json:"salt"`
 	RefHash  string `json:"ref"`
 }
 
