@@ -43,6 +43,7 @@ define(function (require, exports) {
 		logout_link = $("<a href='#' class='navbar-link'>Abmelden</a>").appendTo(txt);
 		logout_link.click(function () {
 			app.setUser(null);
+			storage.clear();
 		});
 		
 		

@@ -1,6 +1,7 @@
 define(function (require, exports) {
 
 	var app = require("main");
+	var login_url = "http://www.mywallet.de/server/users/";
 	
 	var form = $("<form class='form-signin' role='form'></form>");
 	$("<h2 class='form-signin-heading'>Anmelden</h2>").appendTo(form);
@@ -13,8 +14,12 @@ define(function (require, exports) {
 	$("<button class='btn btn-lg btn-primary btn-block' " +
 			"type='submit'>Anmelden</button>").appendTo(form);
 	
+	var warning = $("<div class='alert alert-warning'>Login fehlerhaft!</div>");
+	form.prepend(warning);
+	warning.hide();
 	
 	form.prepend("<h1>MyWallet Web</h1>");
+	
 	
 	exports.view  = function () {
 		return form;
@@ -23,8 +28,26 @@ define(function (require, exports) {
 	form.submit(function () {
 		var username = userInput.val();
 		var password = pwdInput.val();
+		var usrObj = {username: username, password: password};
+		warning.hide();
+		$.ajax({
+			type : "GET",
+			url : login_url + username,
+			headers : {
+				"X-Mywallet-Auth" : JSON.stringify(usrObj)
+			},
+			dataType : "json",
+			error : function (xhr, status, text) {
+				warning.show();
+				pwdInput.val("");
+			},
+			success : function (d) {
+				app.setUser(usrObj);
+				userInput.val("");
+				pwdInput.val("");
+			}
+		});
 		
-		app.setUser({username: username, password: password});
 		return false;
 	});
 	

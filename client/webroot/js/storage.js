@@ -13,8 +13,7 @@ define(function (require, exports) {
 
 	var initialized = false;
 	
-//	localStorage["objects"] = null;
-//	localStorage["refs"] = null;
+	
 	
 	if(localStorage["objects"] != null && localStorage["objects"] != "null") {
 		objects = JSON.parse(localStorage["objects"]);
@@ -368,6 +367,13 @@ define(function (require, exports) {
 	
 	exports.getCategories = function () {
 		return categories;
+	};
+	
+	exports.clear = function () {
+		localStorage["objects"] = null;
+		localStorage["refs"] = null;
+		categories_module.clear();
+		entries_module.clear();
 	};
 	
 });

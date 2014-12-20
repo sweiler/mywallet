@@ -77,8 +77,10 @@ define(function (require, exports) {
 		logged_in = user;
 		
 		if(window.localStorage !== undefined) {
-			if(user != null)
+			if(user != null) {
 				window.localStorage["user"] = JSON.stringify(user);
+				storage.sync();
+			}	
 			else
 				window.localStorage.removeItem("user");
 		}
@@ -88,7 +90,7 @@ define(function (require, exports) {
 	
 	exports.getUser = function () {
 		return logged_in;
-	}
+	};
 	
 	if(window.localStorage !== undefined) {
 		var str = window.localStorage["user"];
