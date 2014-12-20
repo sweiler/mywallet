@@ -1,14 +1,29 @@
 CACHE MANIFEST
-# rev 13
-/main.css
-/js/require.js
-/js/main.js
+# rev 14
+/js/bootstrap-datepicker.js
+/js/homepage.js
+/js/storage.js
 /js/navigation.js
-/js/jquery.js
+/js/entries.js
+/js/require.js
 /js/bootstrap.min.js
-/css/bootstrap.min.css
-/css/bootstrap-theme.min.css
+/js/sha1.js
+/js/categories.js
+/js/main.js
+/js/jquery.js
+/js/jquery-ui.min.js
+/js/entryDialog.js
+/js/login.js
+/js/locales/bootstrap-datepicker.de.js
+/js/urlparser.js
+/fonts/glyphicons-halflings-regular.ttf
 /fonts/glyphicons-halflings-regular.eot
 /fonts/glyphicons-halflings-regular.svg
-/fonts/glyphicons-halflings-regular.ttf
 /fonts/glyphicons-halflings-regular.woff
+/css/datepicker3.css
+/css/bootstrap.min.css
+/css/bootstrap-theme.min.css
+/css/jquery-ui.structure.min.css
+/css/datepicker.css
+/css/jquery-ui.min.css
+/main.css
