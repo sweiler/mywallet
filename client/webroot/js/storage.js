@@ -9,7 +9,7 @@ define(function (require, exports) {
 	var objects = new Object();
 	var refs = new Object();
 	
-	var remote_url = "http://www.mywallet.de/server/";
+	var remote_url = "/server/";
 
 	var initialized = false;
 	

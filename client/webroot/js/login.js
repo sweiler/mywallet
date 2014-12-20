@@ -1,7 +1,7 @@
 define(function (require, exports) {
 
 	var app = require("main");
-	var login_url = "http://www.mywallet.de/server/users";
+	var login_url = "/server/users";
 	
 	var form = $("<form class='form-signin' role='form'></form>");
 	$("<h2 class='form-signin-heading'>Anmelden</h2>").appendTo(form);
