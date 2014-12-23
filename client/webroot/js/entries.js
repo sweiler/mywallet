@@ -45,7 +45,13 @@ define(function (require, exports) {
 		var row = $("<tr />").appendTo(entrytable);
 		$("<td>" + desc + "</td>").appendTo(row);
 		$("<td>" + date + "</td>").appendTo(row);
-		$("<td>" + amount + "</td>").appendTo(row);
+		var amountTxt = amount.toFixed(2).replace(".", ",") + " €";
+		if(amount >= 0)
+			$("<td>" + amountTxt + "</td>").appendTo(row);
+		else {
+			$("<td class='negative'>" + amountTxt + "</td>").appendTo(row);
+			row.addClass("negative");
+		}
 		$("<td>" + cat + "</td>").appendTo(row);
 		var buttons_td = $("<td></td>").appendTo(row);
 		var remove_link = $("<a href='#'>Löschen</a>").appendTo(buttons_td);
