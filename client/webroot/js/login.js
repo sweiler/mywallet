@@ -48,7 +48,7 @@ define(function (require, exports) {
 				if(xhr.status == 409) {
 					warning.text("Dieser Benutzername ist bereits vergeben.");
 				} else {
-					warning.text("Ein Fehler ist aufgetreten: " + text);
+					warning.text("Ein Fehler ist aufgetreten: " + status + ": " +  text);
 				}
 				warning.show();
 			}
@@ -71,7 +71,7 @@ define(function (require, exports) {
 				if(xhr.status == 403) {
 					warning.text("Anmeldedaten sind falsch!");
 				} else {
-					warning.text("Anmeldung nicht möglich: " + text);
+					warning.text("Anmeldung nicht möglich: " + status + " : " + text + " - " + xhr.status);
 				}
 				warning.show();
 				pwdInput.val("");

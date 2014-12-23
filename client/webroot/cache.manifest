@@ -1,5 +1,8 @@
 CACHE MANIFEST
-# rev 14
+# rev 17
+NETWORK:
+*
+CACHE:
 js/bootstrap-datepicker.js
 js/homepage.js
 js/storage.js
