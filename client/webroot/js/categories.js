@@ -15,6 +15,7 @@ define(function (require, exports) {
 	var heading = $("<thead />").appendTo(categoryTable);
 	var head_row = $("<tr/>").appendTo(heading);
 	$("<th>Name:</th>").appendTo(head_row);
+	$("<th>Summe der Beträge:</th>").appendTo(head_row);
 	
 	exports.view = function () {
 		
@@ -22,10 +23,11 @@ define(function (require, exports) {
 		
 	};
 	
-	exports.addCategory = function (name) {
+	exports.addCategory = function (cat) {
 		var row = $("<tr/>").appendTo(categoryTable);
 		rows.push(row);
-		$("<td>" + name + "</td>").appendTo(row);
+		$("<td>" + cat.name + "</td>").appendTo(row);
+		$("<td>" + cat.amount + "</td>").appendTo(row);
 	};
 	
 	exports.clear = function () {

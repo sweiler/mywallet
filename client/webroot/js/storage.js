@@ -13,7 +13,11 @@ define(function (require, exports) {
 
 	var initialized = false;
 	
-	
+	function parseDate(str) {
+	    var parts = str.split(".");
+	    var d = new Date(parts[2], parts[1] - 1, parts[0]);
+	    return d;
+	}
 	
 	if(localStorage["objects"] != null && localStorage["objects"] != "null") {
 		objects = JSON.parse(localStorage["objects"]);
@@ -93,7 +97,7 @@ define(function (require, exports) {
 						callback();
 				}
 			}});
-	}
+	};
 	
 	var entryEquals = function (entry1, entry2) {
 		return entry1.desc == entry2.desc && 
@@ -295,12 +299,12 @@ define(function (require, exports) {
 	
 	exports.addEntry = function (desc, date, amount, category) {
 		entries.push({desc: desc, date: date, amount: amount, category: category});
-		if(categories.indexOf(category) == -1) {
-			categories.push(category);
-			categories_module.addCategory(category);
-		}
+		entries.sort(function (a, b) {
+			return parseDate(a.date) - parseDate(b.date);
+		});
+		
 		commit();
-		entries_module.addEntry(desc, date, amount, category);
+		update();
 	};
 	
 	exports.removeEntry = function (idx) {
@@ -314,7 +318,13 @@ define(function (require, exports) {
 			}
 		});
 		if(!categoryExisting) {
-			var catIdx = categories.indexOf(removedEntry.category);
+			var catIdx = -1;
+			$.each(categories, function (i, c) {
+				if(c.name == removedEntry.category) {
+					catIdx = i;
+					return false;
+				}
+			});
 			console.log(catIdx);
 			categories.splice(catIdx, 1);
 			categories_module.removeCategory(catIdx);
@@ -324,40 +334,31 @@ define(function (require, exports) {
 		
 	};
 	
-	exports.init = function () {
-		if(!initialized) {
-			initialized = true;
-			
-			var ref = getRef("head");
-			if(ref != "") {
-				var state = loadObject(ref);
-				entries = state.data.entries;
-				categories = [];
-				$.each(entries, function (i, e) {
-					entries_module.addEntry(e.desc, e.date, e.amount, e.category);
-					if(categories.indexOf(e.category) == -1)
-						categories.push(e.category);
-				});
-				$.each(categories, function (i, c) {
-					categories_module.addCategory(c);
-				});
-			}
-		}
-	};
+	
 	
 	var update = function () {
+		entries_module.clear();
+		categories_module.clear();
 		var ref = getRef("head");
 		if(ref != "") {
 			var state = loadObject(ref);
-			console.log("refresh view");
-			entries = state.data.entries.slice();
+			entries = state.data.entries;
 			categories = [];
-			entries_module.clear();
-			categories_module.clear();
 			$.each(entries, function (i, e) {
 				entries_module.addEntry(e.desc, e.date, e.amount, e.category);
-				if(categories.indexOf(e.category) == -1)
-					categories.push(e.category);
+				
+				var catId = -1;
+				$.each(categories, function (i, c) {
+					if(c.name == e.category) {
+						catId = i;
+						return false;
+					}
+				});
+				if(catId == -1) {
+					categories.push({name : e.category, amount : Math.abs(e.amount)});
+				} else {
+					categories[catId].amount += Math.abs(e.amount);
+				}
 			});
 			$.each(categories, function (i, c) {
 				categories_module.addCategory(c);
@@ -365,8 +366,20 @@ define(function (require, exports) {
 		}
 	};
 	
+	exports.init = function () {
+		if(!initialized) {
+			initialized = true;
+			
+			update();
+		}
+	};
+	
 	exports.getCategories = function () {
-		return categories;
+		var cats = [];
+		$.each(categories, function (i, c) {
+			cats.push(c.name);
+		});
+		return cats;
 	};
 	
 	exports.clear = function () {
@@ -375,5 +388,6 @@ define(function (require, exports) {
 		categories_module.clear();
 		entries_module.clear();
 	};
+
 	
 });

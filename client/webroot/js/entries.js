@@ -28,6 +28,7 @@ define(function (require, exports) {
 	
 	
 	var thead = $("<thead />").appendTo(entrytable);
+	var tbody = $("<tbody />").appendTo(entrytable);
 	var headlines = $("<tr/>").appendTo(thead);
 	$("<th>Beschreibung:</th>").appendTo(headlines);
 	$("<th>Datum:</th>").appendTo(headlines);
@@ -42,7 +43,7 @@ define(function (require, exports) {
 	};
 	
 	exports.addEntry = function (desc, date, amount, cat) {
-		var row = $("<tr />").appendTo(entrytable);
+		var row = $("<tr />").prependTo(tbody);
 		$("<td>" + desc + "</td>").appendTo(row);
 		$("<td>" + date + "</td>").appendTo(row);
 		var amountTxt = amount.toFixed(2).replace(".", ",") + " €";
@@ -63,13 +64,11 @@ define(function (require, exports) {
 	};
 	
 	exports.removeEntry = function (idx) {
-		entrytable.find("tbody").children().get(idx).remove();
+		tbody.children().get(idx).remove();
 	};
 	
 	exports.clear = function () {
-		thead.detach();
-		entrytable.empty();
-		thead.appendTo(entrytable);
+		tbody.empty();
 	};
 	
 	

@@ -96,9 +96,9 @@ define(function (require, exports) {
 		
 		cancel_button.click(closer);
 		
-		save_btn.click(function () {form.submit()});
+		save_btn.click(function () {form.submit();});
 		return dialog;
-	}
+	};
 	
 	exports.openPage = function () {
 		return_to_id = app.currentId();
@@ -141,7 +141,7 @@ define(function (require, exports) {
 		var save_btn = $("<button type='button' class='btn btn-primary'" +
 		">Speichern</button>").appendTo(modal_footer);
 		
-		save_btn.click(function () {form.submit()});
+		save_btn.click(function () {form.submit();});
 		
 		
 		
