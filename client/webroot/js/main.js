@@ -79,6 +79,7 @@ define(function (require, exports) {
 		if(window.localStorage !== undefined) {
 			if(user != null) {
 				window.localStorage["user"] = JSON.stringify(user);
+				storage.clear();
 				storage.sync();
 			}	
 			else

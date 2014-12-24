@@ -1,6 +1,5 @@
 define(function (require, exports) {
 	
-	var storage = require("storage");
 	
 	var widget = $("<div/>");
 	
@@ -26,8 +25,9 @@ define(function (require, exports) {
 	exports.addCategory = function (cat) {
 		var row = $("<tr/>").appendTo(categoryTable);
 		rows.push(row);
+		var amountTxt = cat.amount.toFixed(2).replace(".", ",") + " €";
 		$("<td>" + cat.name + "</td>").appendTo(row);
-		$("<td>" + cat.amount + "</td>").appendTo(row);
+		$("<td>" + amountTxt + "</td>").appendTo(row);
 	};
 	
 	exports.clear = function () {

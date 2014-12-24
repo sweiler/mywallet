@@ -5,6 +5,7 @@ define(function (require, exports) {
 	var app = require("main");
 	
 	var entries = [];
+	var viewEntries = [];
 	var categories = [];
 	var objects = new Object();
 	var refs = new Object();
@@ -191,10 +192,10 @@ define(function (require, exports) {
 					var insdiff = diff(diff1.insert, diff2.insert);
 					var deldiff = diff(diff1.del, diff2.del);
 					
-					var newRemote = insdiff.insert;
+					//var newRemote = insdiff.insert;
 					var newLocal = insdiff.del;
 					
-					var delRemote = deldiff.insert;
+					//var delRemote = deldiff.insert;
 					var delLocal = deldiff.del;
 					
 					var merged = orig_data.slice();
@@ -299,44 +300,23 @@ define(function (require, exports) {
 	
 	exports.addEntry = function (desc, date, amount, category) {
 		entries.push({desc: desc, date: date, amount: amount, category: category});
-		entries.sort(function (a, b) {
-			return parseDate(a.date) - parseDate(b.date);
-		});
 		
 		commit();
 		update();
 	};
 	
 	exports.removeEntry = function (idx) {
-		var removedEntry = entries[idx];
-		entries.splice(idx, 1);
-		var categoryExisting = false;
-		$.each(entries, function (i, e) {
-			if(e.category == removedEntry.category) {
-				categoryExisting = true;
-				return false;
-			}
-		});
-		if(!categoryExisting) {
-			var catIdx = -1;
-			$.each(categories, function (i, c) {
-				if(c.name == removedEntry.category) {
-					catIdx = i;
-					return false;
-				}
-			});
-			console.log(catIdx);
-			categories.splice(catIdx, 1);
-			categories_module.removeCategory(catIdx);
-		}
+		var removedEntry = viewEntries[idx];
+		viewEntries.splice(idx, 1);
+		entries.splice(removedEntry.id, 1);
 		commit();
-		entries_module.removeEntry(idx);
-		
+		update();
 	};
 	
 	
 	
 	var update = function () {
+		viewEntries = [];
 		entries_module.clear();
 		categories_module.clear();
 		var ref = getRef("head");
@@ -344,7 +324,14 @@ define(function (require, exports) {
 			var state = loadObject(ref);
 			entries = state.data.entries;
 			categories = [];
-			$.each(entries, function (i, e) {
+			viewEntries = entries.slice();
+			$.each(viewEntries, function (i, e) {
+				e.id = i;
+			});
+			viewEntries.sort(function (a,b) {
+				return parseDate(a.date) - parseDate(b.date);
+			});
+			$.each(viewEntries, function (i, e) {
 				entries_module.addEntry(e.desc, e.date, e.amount, e.category);
 				
 				var catId = -1;
@@ -359,6 +346,9 @@ define(function (require, exports) {
 				} else {
 					categories[catId].amount += Math.abs(e.amount);
 				}
+			});
+			categories.sort(function (a,b) {
+				return b.amount - a.amount;
 			});
 			$.each(categories, function (i, c) {
 				categories_module.addCategory(c);
@@ -385,6 +375,8 @@ define(function (require, exports) {
 	exports.clear = function () {
 		localStorage["objects"] = null;
 		localStorage["refs"] = null;
+		objects = new Object();
+	    refs = new Object();
 		categories_module.clear();
 		entries_module.clear();
 	};
