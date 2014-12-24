@@ -3,6 +3,7 @@ define(function (require, exports) {
 	var entries_module = require("entries");
 	var categories_module = require("categories");
 	var app = require("main");
+	var nav = require("navigation");
 	
 	var entries = [];
 	var viewEntries = [];
@@ -61,6 +62,7 @@ define(function (require, exports) {
 		var clonedEntries = JSON.parse(JSON.stringify(entries));
 		var hash = saveObject({data: {entries: clonedEntries}, ref: ref});
 		saveRef("head", hash);
+		nav.setUnpublished(true);
 	};
 	
 	var fetch  = function (callback) {
@@ -260,6 +262,7 @@ define(function (require, exports) {
 		
 		if(pushing.length == 0) {
 			console.log("Nothing to push.");
+			nav.setUnpublished(false);
 			return;
 		}
 		
@@ -278,6 +281,8 @@ define(function (require, exports) {
 					saveRef("origin", d.hash);
 					if(i > 0) {
 						pushI(i - 1);
+					} else {
+						nav.setUnpublished(false);
 					}
 				},
 				error : function (xhr, status, text) {
@@ -320,7 +325,11 @@ define(function (require, exports) {
 		entries_module.clear();
 		categories_module.clear();
 		var ref = getRef("head");
+		var orig = getRef("origin");
 		if(ref != "") {
+			if(orig != ref) {
+				nav.setUnpublished(true);
+			}
 			var state = loadObject(ref);
 			entries = state.data.entries;
 			categories = [];

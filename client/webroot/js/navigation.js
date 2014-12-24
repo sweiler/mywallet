@@ -24,13 +24,14 @@ define(function (require, exports) {
 	"</button>" + 
 	"</div>";
 
-	
+	var sync = null;
 	exports.init = function () {
 		var navObj = $("<nav class='navbar navbar-inverse navbar-fixed-top' role='navigation'></nav>");
 		var container = $("<div class='container'></div>").appendTo(navObj);
 		$(headerStr).appendTo(container);
 		var h2 = $(header2).appendTo(container);
-		h2.find("#sync").click(function () {
+		sync = h2.find("#sync");
+		sync.click(function () {
 			storage.sync();
 			return false;
 		});
@@ -67,6 +68,14 @@ define(function (require, exports) {
 		}
 		if($("#navbar").hasClass("in"))
 			$("#navbar").collapse('hide');
+	};
+	
+	exports.setUnpublished = function (unpublished) {
+		if(unpublished) {
+			sync.addClass("unpublished");
+		} else {
+			sync.removeClass("unpublished");
+		}
 	};
 	
 	function addNavPoint(name, id) {
